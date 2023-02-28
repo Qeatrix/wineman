@@ -13,7 +13,7 @@ typedef struct {
 } Prefix;
 int PrefixesCount = 0;
 
-enum FileActions { READ, WRITE };
+enum FileActions { READ, WRITEONCE, REWRITE};
 enum PrefixActions { CREATE, EDIT, DELETE };
 
 char *get_input(void) {
@@ -28,10 +28,10 @@ char *get_input(void) {
   return input_buf;
 }
 
-Prefix *file_operations(enum FileActions action) {
-  Prefix *prefix = NULL;
+Prefix *file_operations(enum FileActions action, Prefix *prefix) {
   switch (action) {
     case READ: {
+      Prefix *prefix = NULL;
       struct json_object *parsed_json;
 
       struct json_object *name;
@@ -60,24 +60,62 @@ Prefix *file_operations(enum FileActions action) {
 
           PrefixesCount++;
 
-
           prefix = realloc(prefix, (PrefixesCount + 1) * sizeof(Prefix));
         }
       }
 
+      json_object_put(root);
       return prefix;
       break;
     }
-    case WRITE: {
-        printf("WRITE");
-        break;
+    case WRITEONCE: {
+      printf("WRITE\n");
+
+      struct json_object *new_entry = json_object_new_object();
+
+      json_object_object_add(new_entry, "name", json_object_new_string(prefix[PrefixesCount].name));
+      json_object_object_add(new_entry, "tags", json_object_new_string(prefix[PrefixesCount].tags));
+      json_object_object_add(new_entry, "location", json_object_new_string(prefix[PrefixesCount].location));
+
+      json_object *root = json_object_from_file("data.json");
+      if (!json_object_is_type(root, json_type_array)) {
+        root = json_object_new_array();
+      }
+      
+      json_object_array_add(root, new_entry);
+
+      FILE *data = fopen("data.json", "w");
+      fputs(json_object_to_json_string_ext(root, JSON_C_TO_STRING_PRETTY), data);
+
+      json_object_put(root);
+      break;
+    }
+    case REWRITE: {
+      json_object *root = json_object_new_array();
+
+      for (int i = 0; i < PrefixesCount; i++) {
+        json_object *entry = json_object_new_object();
+
+        json_object_object_add(entry, "name", json_object_new_string(prefix[i].name));
+        json_object_object_add(entry, "tags", json_object_new_string(prefix[i].tags));
+        json_object_object_add(entry, "location", json_object_new_string(prefix[i].location));
+
+        json_object_array_add(root, entry);
+      }
+
+      FILE *data = fopen("data.json", "w");
+      fputs(json_object_to_json_string_ext(root, JSON_C_TO_STRING_PRETTY), data);
+
+      fclose(data);
+      json_object_put(root);
+      break;
     }
   }
 
   return 0;
 }
 
-void prefix_operations(enum PrefixActions action, Prefix *prefix) {
+void prefix_operations(enum PrefixActions action, Prefix *prefix, char *id) {
   switch (action) {
     case CREATE: {
       PrefixesCount++;
@@ -98,13 +136,36 @@ void prefix_operations(enum PrefixActions action, Prefix *prefix) {
 
       prefix[PrefixesCount].id = PrefixesCount;
 
-      printf("\nPrefix %s Created", prefix[PrefixesCount].name);
+      file_operations(WRITEONCE, prefix);
+      printf("\nPrefix %s Saved\n", prefix[PrefixesCount].name);
     }
     case EDIT: {
       
     }
     case DELETE: {
-      
+      char *endptr;
+      long itd = strtol(id, &endptr, 10); // Convert argument string to int to get clear id
+      printf("%lu\n", itd);
+      char *rpn = prefix[itd].name; // Get the name of the prefix to be deleted
+      printf("Prefix ID: %s", rpn);
+      if (itd >= PrefixesCount) {
+        printf("[E] Prefix ID out of range\n");
+        break;
+      }
+
+      for (int i = itd; i < PrefixesCount; i++) {
+        prefix[i] = prefix[i + 1];
+      }
+
+      PrefixesCount--;
+
+      if (PrefixesCount > 0) {
+        prefix = realloc(prefix, PrefixesCount * sizeof(Prefix));
+      } else {
+        prefix = realloc(prefix, sizeof(Prefix));
+      }
+
+      file_operations(REWRITE, prefix);
     }
   }
 }
@@ -112,14 +173,14 @@ void prefix_operations(enum PrefixActions action, Prefix *prefix) {
 int main(int argc, char **argv) {
 
   if (argc >= 1) {
-    Prefix *prefix = file_operations(READ);
+    Prefix *prefix = file_operations(READ, NULL);
     if (!prefix) {
       printf("[E] The pointer to the structure has not been passed");
       return 1;
     }
 
     if (strcmp(argv[1], "create") == 0) {
-      prefix_operations(CREATE, prefix);
+      prefix_operations(CREATE, prefix, NULL);
 
     } else if (strcmp(argv[1], "list") == 0) {
       printf("╭─ data.json\n");
@@ -130,6 +191,11 @@ int main(int argc, char **argv) {
         printf(" │ Name: %s\n", prefix[i].name);
         printf(" │ Tags: %s\n", prefix[i].tags);
         printf(" │ Location: %s\n\n", prefix[i].location);
+      }
+
+    } else if (strcmp(argv[1], "delete") == 0) {
+      if (argv[2]) {
+        prefix_operations(DELETE, prefix, argv[2]);
       }
     } else {
       printf(
