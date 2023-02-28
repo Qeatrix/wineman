@@ -1,0 +1,19 @@
+[
+    {
+        "name": "Gaming",
+        "tags": "gaming, emulator",
+        "location": "/home/quartix/Games/"
+    },
+    {
+        "name": "Programs",
+        "tags": "Software",
+        "location": "/home/quartix/Soft/"
+    },
+    {
+        "name": "Star Citizen",
+        "tags": "Game, space, simulator",
+        "location": "/home/quartix/Gamess/StarCitizen"
+    }    
+]
+
+
