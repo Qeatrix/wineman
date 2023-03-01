@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include "outeffects.h"
 
 #define MAX_STRING_SIZE 1024
 
@@ -69,8 +71,6 @@ Prefix *file_operations(enum FileActions action, Prefix *prefix) {
       break;
     }
     case WRITEONCE: {
-      printf("WRITE\n");
-
       struct json_object *new_entry = json_object_new_object();
 
       json_object_object_add(new_entry, "name", json_object_new_string(prefix[PrefixesCount].name));
@@ -121,9 +121,7 @@ void prefix_operations(enum PrefixActions action, Prefix *prefix, char *id) {
       PrefixesCount++;
       prefix = realloc(prefix, (PrefixesCount + 1) * sizeof(Prefix));
       
-      printf("╭─────────────────╮\n");
-      printf("│ Prefix Creation │\n");
-      printf("╰─────────────────╯\n\n");
+      print_mode(PREFIX_CREATE);
 
       printf("(1/3) │ Name: ");
       strncpy(prefix[PrefixesCount].name, get_input(), MAX_STRING_SIZE);
@@ -137,40 +135,73 @@ void prefix_operations(enum PrefixActions action, Prefix *prefix, char *id) {
       prefix[PrefixesCount].id = PrefixesCount;
 
       file_operations(WRITEONCE, prefix);
-      printf("\nPrefix %s Saved\n", prefix[PrefixesCount].name);
+      print_color(GREEN);
+      printf("\n>> Prefix Created\n");
+      print_color(DEFAULT);
+
+      break;
     }
     case EDIT: {
-      
+      printf("EDIT");
+      break;
     }
     case DELETE: {
       char *endptr;
       long itd = strtol(id, &endptr, 10); // Convert argument string to int to get clear id
-      printf("%lu\n", itd);
+
       char *rpn = prefix[itd].name; // Get the name of the prefix to be deleted
-      printf("Prefix ID: %s", rpn);
-      if (itd >= PrefixesCount) {
-        printf("[E] Prefix ID out of range\n");
+      char *rpt = prefix[itd].tags; // Get the name of the prefix to be deleted
+      char *rpl = prefix[itd].location; // Get the name of the prefix to be deleted
+
+      print_mode(PREFIX_DELETE);
+
+      printf("Selected Prefix:\n\n");
+
+      printf("│ Name: %s\n", rpn);
+      printf("│ Tags: %s\n", rpt);
+      printf("│ Location: %s\n\n", rpl);
+
+      printf(":: Are you sure you want to remove this prefix? [y/N]: ");
+
+      if (strcmp(get_input(), "y") == 0) {
+        
+        if (itd >= PrefixesCount) {
+          printf("[E] Prefix ID out of range\n");
+          break;
+        }
+
+        for (int i = itd; i < PrefixesCount; i++) {
+          prefix[i] = prefix[i + 1];
+        }
+
+        PrefixesCount--;
+
+        if (PrefixesCount > 0) {
+          prefix = realloc(prefix, PrefixesCount * sizeof(Prefix));
+        } else {
+          prefix = realloc(prefix, sizeof(Prefix));
+        }
+
+        file_operations(REWRITE, prefix);
+        print_color(RED);
+        printf(">> Prefix Deleted\n");
+        print_color(DEFAULT);
+
+        break;
+      } else {
+        print_color(YELLOW);
+        printf("[!] Operation Cancelled\n");
+        print_color(DEFAULT);
+
         break;
       }
-
-      for (int i = itd; i < PrefixesCount; i++) {
-        prefix[i] = prefix[i + 1];
-      }
-
-      PrefixesCount--;
-
-      if (PrefixesCount > 0) {
-        prefix = realloc(prefix, PrefixesCount * sizeof(Prefix));
-      } else {
-        prefix = realloc(prefix, sizeof(Prefix));
-      }
-
-      file_operations(REWRITE, prefix);
-    }
+    } 
   }
 }
 
 int main(int argc, char **argv) {
+
+  system("ls ~/");
 
   if (argc >= 1) {
     Prefix *prefix = file_operations(READ, NULL);
