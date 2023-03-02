@@ -11,6 +11,7 @@ Basic functionality is still under development
 - [ ] Creating a new data.json file if it does not exist
 - [ ] Interaction with environment variables
 - [ ] Config file support
+- [ ] Using a dedicated directory for a data file
 
 ## Compile
 1. Clone and get into repository
