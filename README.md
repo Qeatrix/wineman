@@ -1,9 +1,16 @@
 # wineman
 
-A small utility for those who are too lazy to type
+Wineman is a utility for quick access and management of wine prefixes
 
 ## Warning
 Basic functionality is still under development
+
+## Todo
+- [ ] Handle cd into prefixes root folder
+- [ ] Silent create a prefix when creating a new json entry
+- [ ] Creating a new data.json file if it does not exist
+- [ ] Interaction with environment variables
+- [ ] Config file support
 
 ## Compile
 1. Clone and get into repository
