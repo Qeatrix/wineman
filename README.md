@@ -8,7 +8,7 @@ Basic functionality is still under development
 ## Compile
 1. Clone and get into repository
 ```bash
-git clone https://github.com/Qeatrix/wineman && cd wineman
+git clone https://github.com/unxsh/wineman.git && cd wineman
 ```
 
 2. Create build folder and get into it
