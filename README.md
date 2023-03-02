@@ -24,12 +24,17 @@ git clone https://github.com/unxsh/wineman.git && cd wineman
 mkdir build && cd build
 ```
 
-3. Compile the app
+3. Copy the data file to build directory
+```bash
+cp ../data.json .
+```
+
+4. Compile the app
 ```bash
 cmake .. && make
 ```
 
-4. Run the app
+5. Run the app
 ```bash
 ./wineman
 ```
