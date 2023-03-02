@@ -46,5 +46,12 @@ void print_mode(enum Modes action) {
 
       break;
     }
+    case PREFIX_NOTFOUND: {
+      print_color(YELLOW);
+      printf("╭─────────────────────────╮\n");
+      printf("│ No Saved Prefixes Found │\n");
+      printf("╰─────────────────────────╯\n\n");
+      print_color(DEFAULT);
+    }
   }
 }

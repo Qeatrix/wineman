@@ -201,8 +201,6 @@ void prefix_operations(enum PrefixActions action, Prefix *prefix, char *id) {
 
 int main(int argc, char **argv) {
 
-  system("ls ~/");
-
   if (argc >= 1) {
     Prefix *prefix = file_operations(READ, NULL);
     if (!prefix) {
@@ -217,11 +215,15 @@ int main(int argc, char **argv) {
       printf("╭─ data.json\n");
       printf("╰─ Saved Prefixes\n\n");
 
-      for (int i = 0; i < PrefixesCount; i++) {
-        printf(" │ ID: %d\n", prefix[i].id);
-        printf(" │ Name: %s\n", prefix[i].name);
-        printf(" │ Tags: %s\n", prefix[i].tags);
-        printf(" │ Location: %s\n\n", prefix[i].location);
+      if (PrefixesCount == 0) {
+        print_mode(PREFIX_NOTFOUND);
+      } else {
+        for (int i = 0; i < PrefixesCount; i++) {
+          printf(" │ ID: %d\n", prefix[i].id);
+          printf(" │ Name: %s\n", prefix[i].name);
+          printf(" │ Tags: %s\n", prefix[i].tags);
+          printf(" │ Location: %s\n\n", prefix[i].location);
+        }
       }
 
     } else if (strcmp(argv[1], "delete") == 0) {
