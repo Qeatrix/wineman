@@ -6,6 +6,7 @@
 #include "outeffects.h"
 
 #define MAX_STRING_SIZE 1024
+#define DEFAULT_PREFIX_DIR "~/.wineman/"
 
 typedef struct {
   int id;
@@ -115,6 +116,39 @@ Prefix *file_operations(enum FileActions action, Prefix *prefix) {
   return 0;
 }
 
+int wine_interacting(enum PrefixActions action, Prefix *prefix, char *location) {
+  switch(action) {
+    case CREATE: {
+      char command[MAX_STRING_SIZE];
+      char temp_display_var[MAX_STRING_SIZE];
+
+      strncpy(temp_display_var, getenv("DISPLAY"), MAX_STRING_SIZE);
+      snprintf(command, sizeof(command), "export DISPLAY=; WINEDEBUG=-all WINEPREFIX=%s wineboot; export DISPLAY=%s", location, temp_display_var);
+
+      // char temp_print_msg[MAX_STRING_SIZE];
+      // snprintf(temp_print_msg, sizeof(temp_print_msg), "\n>> Creating new prefix in %s...\n", location);
+      print_color(YELLOW);
+      printf("\n >> Creating new prefix in %s...\n", location);
+      system(command);
+      
+      break;
+    }
+    case EDIT: {
+      break;
+    }
+    case DELETE: {
+      char command[MAX_STRING_SIZE];
+
+      snprintf(command, sizeof(command), "rm -rf %s", location);
+      system(command);
+      
+      break;
+    }
+  }
+
+  return 0;
+}
+
 void prefix_operations(enum PrefixActions action, Prefix *prefix, char *id) {
   switch (action) {
     case CREATE: {
@@ -131,12 +165,18 @@ void prefix_operations(enum PrefixActions action, Prefix *prefix, char *id) {
 
       printf("(3/3) │ Location: ");
       strncpy(prefix[PrefixesCount].location, get_input(), MAX_STRING_SIZE);
+      if (strcmp(prefix[PrefixesCount].location, "") == 0) {
+        char dir_buffer[MAX_STRING_SIZE];
+        snprintf(dir_buffer, MAX_STRING_SIZE, "%s'%s'/", DEFAULT_PREFIX_DIR, prefix[PrefixesCount].name);        
+        strncpy(prefix[PrefixesCount].location, dir_buffer, MAX_STRING_SIZE);
+      }
 
       prefix[PrefixesCount].id = PrefixesCount;
 
+      wine_interacting(CREATE, prefix, prefix[PrefixesCount].location);
       file_operations(WRITEONCE, prefix);
       print_color(GREEN);
-      printf("\n>> Prefix Created\n");
+      printf("\n + Prefix Created\n");
       print_color(DEFAULT);
 
       break;
@@ -170,6 +210,8 @@ void prefix_operations(enum PrefixActions action, Prefix *prefix, char *id) {
           break;
         }
 
+        wine_interacting(DELETE, prefix, rpl);
+
         for (int i = itd; i < PrefixesCount; i++) {
           prefix[i] = prefix[i + 1];
         }
@@ -184,7 +226,7 @@ void prefix_operations(enum PrefixActions action, Prefix *prefix, char *id) {
 
         file_operations(REWRITE, prefix);
         print_color(RED);
-        printf(">> Prefix Deleted\n");
+        printf(" - Prefix Deleted\n");
         print_color(DEFAULT);
 
         break;
