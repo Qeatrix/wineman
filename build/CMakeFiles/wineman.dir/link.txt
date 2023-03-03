@@ -1,1 +1,0 @@
-/usr/bin/cc -rdynamic CMakeFiles/wineman.dir/main.c.o CMakeFiles/wineman.dir/outeffects.c.o -o wineman  -ljson-c 

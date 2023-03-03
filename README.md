@@ -7,9 +7,9 @@ Basic functionality is still under development
 
 ## Todo
 - [ ] Handle cd into prefixes root folder
-- [ ] Silent create a prefix when creating a new json entry
+- [X] Silent create a prefix when creating a new json entry
 - [ ] Creating a new data.json file if it does not exist
-- [ ] Interaction with environment variables
+- [X] Interaction with environment variables
 - [ ] Config file support
 - [ ] Using a dedicated directory for a data file
 

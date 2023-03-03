@@ -1,3 +1,0 @@
-/home/quartix/Documents/Practice/wineman/build/CMakeFiles/wineman.dir
-/home/quartix/Documents/Practice/wineman/build/CMakeFiles/edit_cache.dir
-/home/quartix/Documents/Practice/wineman/build/CMakeFiles/rebuild_cache.dir
